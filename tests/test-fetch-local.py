@@ -2,16 +2,16 @@ import json
 import sys
 import os
 
-# Lambda fonksiyonunu import edebilmek için path'e ekle
+# Add the lambda function folder to the Python path so we can import it
 sys.path.insert(0, 'lambda-functions/fetch-repo')
 
-# Environment variable ayarla (S3 bucket adı)
+# Set the environment variable (S3 bucket name)
 os.environ['BUCKET_NAME'] = 'codeonboard-ai-repos'
 
-# Lambda fonksiyonunu import et
+# Import the Lambda handler
 from lambda_function import lambda_handler
 
-# Test input'unu yükle
+# Load the test input event
 with open('tests/test-fetch-input.json', 'r') as f:
     event = json.load(f)
 
@@ -19,14 +19,14 @@ print("🧪 Testing fetch-repo lambda locally...")
 print(f"Input: {event}")
 print()
 
-# Lambda'yı çalıştır
+# Run the Lambda function locally
 result = lambda_handler(event, None)
 
 print()
 print("Result:")
 print(json.dumps(result, indent=2))
 
-# Eğer başarılıysa S3'ü kontrol et
+# If the Lambda ran successfully, check S3 for uploaded files
 if result['statusCode'] == 200:
     import boto3
     s3 = boto3.client('s3')
@@ -34,7 +34,7 @@ if result['statusCode'] == 200:
     body = json.loads(result['body'])
     repo_id = body['repoId']
     
-    print(f"\n📂 Checking S3 for files from {repo_id}...")
+    print(f"\nChecking S3 for files from {repo_id}...")
     
     try:
         response = s3.list_objects_v2(
@@ -52,4 +52,4 @@ if result['statusCode'] == 200:
     except Exception as e:
         print(f"Error checking S3: {e}")
 else:
-    print("Lambda returned error")
+    print("Lambda returned an error")
